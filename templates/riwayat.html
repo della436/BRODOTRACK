@@ -1,0 +1,230 @@
+
+{% extends "base.html" %}
+
+{% block title %}Riwayat Harga | BRODOTRACK{% endblock %}
+
+{% block page_heading %}Riwayat Harga{% endblock %}
+
+{% block page_subtitle %}
+Pantau perubahan harga produk BRODO dari waktu ke waktu.
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="section-header">
+    <div>
+        <h2>Riwayat Harga Produk</h2>
+        <p>
+            Catatan perubahan harga, diskon, dan ketersediaan produk
+            berdasarkan waktu pengambilan data.
+        </p>
+    </div>
+</div>
+
+
+<!-- TABEL RIWAYAT HARGA -->
+<div class="panel history-panel">
+
+    <div class="panel-header">
+        <div>
+            <h3>Data Riwayat Harga</h3>
+            <p>
+                Informasi perubahan harga produk yang telah tercatat.
+            </p>
+        </div>
+
+        <span class="table-count">
+            {{ riwayat|length }} data
+        </span>
+    </div>
+
+
+    <!-- PENCARIAN -->
+    <div class="table-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input
+                type="text"
+                id="searchHistory"
+                placeholder="Cari nama produk..."
+            >
+        </div>
+    </div>
+
+
+    <!-- TABEL -->
+    <div class="table-container">
+
+        <table id="historyTable">
+
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Nama Produk</th>
+                    <th>Harga Normal</th>
+                    <th>Harga Tercatat</th>
+                    <th>Diskon</th>
+                    <th>Ketersediaan</th>
+                    <th>Waktu Pencatatan</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in riwayat %}
+
+                <tr>
+                    <td>{{ loop.index }}</td>
+
+                    <td class="product-name-cell">
+                        {{ item.nama_produk }}
+                    </td>
+
+                    <!-- HARGA NORMAL -->
+                    <td class="price-cell">
+                        {% if item.harga_normal is not none %}
+                            Rp{{ "{:,.0f}".format(item.harga_normal).replace(",", ".") }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <!-- HARGA TERCATAT -->
+                    <td class="price-cell">
+                        {% if item.harga is not none %}
+
+                            {% if item.persentase_diskon is not none
+                                  and item.persentase_diskon > 0 %}
+
+                                <strong style="color: var(--success);">
+                                    Rp{{ "{:,.0f}".format(item.harga).replace(",", ".") }}
+                                </strong>
+
+                            {% else %}
+
+                                Rp{{ "{:,.0f}".format(item.harga).replace(",", ".") }}
+
+                            {% endif %}
+
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <!-- DISKON -->
+                    <td>
+                        {% if item.persentase_diskon is not none
+                              and item.persentase_diskon > 0 %}
+
+                            <span class="badge badge-warning">
+                                {{ "{:.2f}".format(item.persentase_diskon) }}%
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-info">
+                                Tidak ada diskon
+                            </span>
+
+                        {% endif %}
+                    </td>
+
+                    <!-- STATUS STOK -->
+                    <td>
+                        {% set status = (item.ketersediaan or '')|trim|lower %}
+
+                        {% if status in [
+                            'tersedia',
+                            'available',
+                            'in stock',
+                            'ready',
+                            'https://schema.org/instock'
+                        ] %}
+
+                            <span class="badge badge-success">
+                                Tersedia
+                            </span>
+
+                        {% elif status in [
+                            'habis',
+                            'tidak tersedia',
+                            'out of stock',
+                            'sold out',
+                            'https://schema.org/outofstock'
+                        ] %}
+
+                            <span class="badge badge-danger">
+                                Habis
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-warning">
+                                Tidak diketahui
+                            </span>
+
+                        {% endif %}
+                    </td>
+
+                    <!-- WAKTU PENCATATAN -->
+                    <td class="date-cell">
+                        {{ item.waktu_scraping or '-' }}
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>Belum ada riwayat harga produk.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    // Pencarian riwayat harga
+    const searchInput = document.getElementById("searchHistory");
+    const historyTable = document.getElementById("historyTable");
+
+    if (searchInput && historyTable) {
+
+        searchInput.addEventListener("input", function () {
+
+            const keyword = this.value.toLowerCase();
+            const rows = historyTable.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+
+                const text = row.textContent.toLowerCase();
+
+                row.style.display = text.includes(keyword)
+                    ? ""
+                    : "none";
+
+            });
+
+        });
+
+    }
+</script>
+
+{% endblock %}

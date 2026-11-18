@@ -1,0 +1,161 @@
+
+{% extends "base.html" %}
+
+{% block title %}Monitoring Stok | BRODOTRACK{% endblock %}
+
+{% block page_heading %}Monitoring Stok{% endblock %}
+
+{% block page_subtitle %}
+Pantau ketersediaan stok produk BRODO berdasarkan ukuran.
+{% endblock %}
+
+{% block content %}
+
+<div class="section-header">
+    <div>
+        <h2>Monitoring Stok</h2>
+        <p>
+            Menampilkan ketersediaan stok produk BRODO
+            berdasarkan kombinasi produk dan ukuran.
+        </p>
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Kembali
+    </a>
+</div>
+
+
+<!-- STATISTIK -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div class="stat-icon icon-green">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <span class="badge badge-success">Tersedia</span>
+        </div>
+
+        <p class="stat-label">Stok Tersedia</p>
+        <h2 class="stat-value">{{ total_tersedia }}</h2>
+        <p class="stat-description">Kombinasi produk dan ukuran tersedia</p>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div class="stat-icon icon-red">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <span class="badge badge-danger">Habis</span>
+        </div>
+
+        <p class="stat-label">Stok Habis</p>
+        <h2 class="stat-value">{{ total_habis }}</h2>
+        <p class="stat-description">Kombinasi produk dan ukuran habis</p>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div class="stat-icon icon-yellow">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <span class="badge badge-warning">Belum diketahui</span>
+        </div>
+
+        <p class="stat-label">Belum Diketahui</p>
+        <h2 class="stat-value">{{ total_tidak_diketahui }}</h2>
+        <p class="stat-description">Status stok belum teridentifikasi</p>
+    </div>
+
+</div>
+
+
+<!-- TABEL STOK -->
+<div class="panel">
+
+    <div class="panel-header">
+        <div>
+            <h3>Daftar Ketersediaan Stok</h3>
+            <p>Informasi stok terbaru setiap produk dan ukuran.</p>
+        </div>
+
+        <span class="badge badge-info">
+            {{ total_kombinasi }} Kombinasi
+        </span>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Produk</th>
+                    <th>Ukuran</th>
+                    <th>Harga Terbaru</th>
+                    <th>Status Stok</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in data_stok %}
+
+                <tr>
+                    <td>{{ loop.index }}</td>
+
+                    <td>
+                        <div class="product-name">
+                            {{ item.nama_produk }}
+                        </div>
+                    </td>
+
+                    <td>{{ item.ukuran or "-" }}</td>
+
+                    <td>
+                        {% if item.harga is not none %}
+                            Rp{{ "{:,.0f}".format(item.harga).replace(",", ".") }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% set status = format_status_stok(item.ketersediaan) %}
+
+                        {% if status == "Tersedia" %}
+                            <span class="badge badge-success">Tersedia</span>
+                        {% elif status == "Habis" %}
+                            <span class="badge badge-danger">Habis</span>
+                        {% else %}
+                            <span class="badge badge-warning">Belum diketahui</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <p>Belum ada data stok.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

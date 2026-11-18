@@ -1,0 +1,23 @@
+# Token dan konfigurasi rahasia
+.env
+.env.*
+!.env.example
+
+# Virtual environment
+.venv/
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Database lokal
+*.db
+*.sqlite
+*.sqlite3
+# File sistem macOS
+.DS_Store
+
+# Log aplikasi
+logs/
+*.log

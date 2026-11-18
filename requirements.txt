@@ -1,0 +1,10 @@
+requests
+beautifulsoup4
+pandas
+matplotlib
+flask
+openpyxl
+reportlab
+apscheduler
+python-telegram-bot
+pytest

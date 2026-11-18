@@ -1,0 +1,273 @@
+
+{% extends "base.html" %}
+
+{% block title %}Katalog Produk | BRODOTRACK{% endblock %}
+
+{% block page_heading %}Katalog Produk{% endblock %}
+
+{% block page_subtitle %}
+Kelola pemantauan katalog dan harga produk sepatu BRODO.
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER KATALOG -->
+<div class="section-header">
+    <div>
+        <h2>Semua Produk BRODO</h2>
+        <p>Daftar produk berdasarkan data yang berhasil dikumpulkan.</p>
+    </div>
+
+    <span class="badge badge-info">
+        {{ produk|length }} Produk
+    </span>
+</div>
+
+
+<!-- DAFTAR KATALOG -->
+<div class="panel">
+
+    <div class="panel-header">
+        <div>
+            <h3>Daftar Katalog</h3>
+            <p>Informasi produk, harga, diskon, dan ketersediaan stok terbaru.</p>
+        </div>
+
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input
+                type="text"
+                id="searchProduct"
+                placeholder="Cari nama produk..."
+            >
+        </div>
+    </div>
+
+
+    <div class="table-wrapper">
+
+        <table class="data-table" id="productTable">
+
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Produk</th>
+                    <th>Kategori</th>
+                    <th>Informasi Harga</th>
+                    <th>Status Stok</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                {% for item in produk %}
+
+                <tr>
+
+                    <!-- NOMOR -->
+                    <td>{{ loop.index }}</td>
+
+
+                    <!-- INFORMASI PRODUK -->
+                    <td>
+                        <div class="product-info">
+
+                            {% if item.url_gambar %}
+
+                            <img
+                                src="{{ item.url_gambar }}"
+                                alt="{{ item.nama_produk }}"
+                                class="product-image"
+                            >
+
+                            {% else %}
+
+                            <div class="product-image image-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+
+                            {% endif %}
+
+                            <div>
+                                <div class="product-name">
+                                    {{ item.nama_produk }}
+                                </div>
+
+                                <div class="product-category">
+                                    SKU: {{ item.sku or "-" }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+
+
+                    <!-- KATEGORI -->
+                    <td>
+                        {{ item.kategori or "-" }}
+                    </td>
+
+
+                    <!-- INFORMASI HARGA -->
+                    <td class="price-cell">
+
+                        {% if item.persentase_diskon is not none
+                              and item.persentase_diskon > 0 %}
+
+                            <div style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 5px;
+                            ">
+
+                                <span style="
+                                    color: var(--text-muted);
+                                    text-decoration: line-through;
+                                    font-size: 10px;
+                                    font-weight: 400;
+                                ">
+                                    Rp{{ "{:,.0f}".format(
+                                        item.harga_normal
+                                        if item.harga_normal is not none
+                                        else item.harga
+                                    ).replace(",", ".") }}
+                                </span>
+
+                                <strong style="color: var(--success);">
+                                    Rp{{ "{:,.0f}".format(
+                                        item.harga_diskon
+                                        if item.harga_diskon is not none
+                                        else item.harga
+                                    ).replace(",", ".") }}
+                                </strong>
+
+                                <span class="badge badge-warning">
+                                    Diskon {{ "{:.2f}".format(item.persentase_diskon) }}%
+                                </span>
+
+                            </div>
+
+                        {% elif item.harga is not none %}
+
+                            <strong>
+                                Rp{{ "{:,.0f}".format(item.harga).replace(",", ".") }}
+                            </strong>
+
+                            <div class="product-category">
+                                Tidak ada diskon
+                            </div>
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- STATUS STOK -->
+                    <td>
+
+                        {% set status = (item.ketersediaan or '')|trim|lower %}
+
+                        {% if status in [
+                            'tersedia',
+                            'available',
+                            'in stock',
+                            'ready',
+                            'https://schema.org/instock'
+                        ] %}
+
+                            <span class="badge badge-success">
+                                Tersedia
+                            </span>
+
+                        {% elif status in [
+                            'habis',
+                            'tidak tersedia',
+                            'out of stock',
+                            'sold out',
+                            'https://schema.org/outofstock'
+                        ] %}
+
+                            <span class="badge badge-danger">
+                                Habis
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-warning">
+                                Tidak diketahui
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- AKSI -->
+                    <td>
+                        <a
+                            href="{{ url_for('detail_produk', id_produk=item.id_produk) }}"
+                            class="btn btn-secondary"
+                        >
+                            Detail
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="bi bi-box-seam"></i>
+                            <p>Belum ada produk yang tersimpan.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    const searchInput = document.getElementById("searchProduct");
+    const tableRows = document.querySelectorAll("#productTable tbody tr");
+
+    searchInput.addEventListener("input", function () {
+
+        const keyword = this.value.toLowerCase();
+
+        tableRows.forEach(row => {
+
+            const productName =
+                row.cells[1]?.textContent.toLowerCase() || "";
+
+            row.style.display =
+                productName.includes(keyword) ? "" : "none";
+
+        });
+
+    });
+</script>
+
+{% endblock %}

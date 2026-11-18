@@ -1,0 +1,144 @@
+
+{% extends "base.html" %}
+
+{% block title %}Monitoring Diskon | BRODOTRACK{% endblock %}
+
+{% block page_heading %}Monitoring Diskon{% endblock %}
+
+{% block page_subtitle %}
+Pantau potongan harga produk BRODO yang sedang berlangsung.
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="section-header">
+    <div>
+        <h2>Monitoring Diskon</h2>
+        <p>
+            Daftar produk BRODO yang sedang mendapatkan potongan harga,
+            diurutkan berdasarkan persentase diskon terbesar.
+        </p>
+    </div>
+</div>
+
+
+<!-- DAFTAR PRODUK DISKON -->
+<div class="panel">
+
+    <div class="panel-header">
+        <div>
+            <h3>Daftar Produk Diskon</h3>
+            <p>
+                Informasi harga, persentase diskon, dan ketersediaan stok terbaru.
+            </p>
+        </div>
+
+        <span class="badge badge-info">
+            {{ data_promo|length }} Produk
+        </span>
+    </div>
+
+
+    <div class="table-wrapper">
+
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Produk</th>
+                    <th>Informasi Harga</th>
+                    <th>Status Stok</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in data_promo %}
+
+                <tr>
+                    <td>{{ loop.index }}</td>
+
+                    <td>
+                        <div class="product-name">
+                            {{ item.nama_produk }}
+                        </div>
+                    </td>
+
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+
+                            <span style="
+                                color: var(--text-muted);
+                                text-decoration: line-through;
+                                font-size: 12px;
+                            ">
+                                {% if item.harga_normal is not none %}
+                                    Rp{{ "{:,.0f}".format(item.harga_normal).replace(",", ".") }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
+
+                            <strong style="color: var(--success);">
+                                {% if item.harga_diskon is not none %}
+                                    Rp{{ "{:,.0f}".format(item.harga_diskon).replace(",", ".") }}
+                                {% elif item.harga is not none %}
+                                    Rp{{ "{:,.0f}".format(item.harga).replace(",", ".") }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </strong>
+
+                            <span class="badge badge-warning" style="width: fit-content;">
+                                Diskon {{ "{:.2f}".format(item.persentase_diskon) }}%
+                            </span>
+
+                        </div>
+                    </td>
+
+                    <td>
+                        {% set status = item.ketersediaan|string|lower %}
+
+                        {% if status == "tersedia" or status.endswith("instock") %}
+                            <span class="badge badge-success">Tersedia</span>
+                        {% elif status == "habis" or status.endswith("outofstock") %}
+                            <span class="badge badge-danger">Habis</span>
+                        {% else %}
+                            <span class="badge badge-warning">Tidak diketahui</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{{ url_for('detail_produk', id_produk=item.id_produk) }}"
+                           class="btn btn-secondary">
+                            Detail
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="bi bi-tag"></i>
+                            <p>Belum ada produk yang sedang mendapatkan diskon.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
